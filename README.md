@@ -1,3 +1,16 @@
+# This Fork...
+
+Allows an extra option to be passed to cache_constants
+`:allow_recaching` which permits any constants previously defined using
+cache_constants to be redefined by a subsequent call to cache_constants.
+eg.
+
+    Account.send(:cache_constants, :allow_recaching => true)
+
+This can be useful in a test suite where you reload the records into a
+database between test cases, particularly when value of the primary key
+for those records may change between reloads.
+
 # Constant Cache
 
 When your database has tables that store lookup data, there is a tendency 

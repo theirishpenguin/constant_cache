@@ -41,11 +41,12 @@ module ConstantCache
     # ConstantCache::DuplicateConstantError is raised.
     #
     def cache_constants(opts = {})
+      allow_recaching = opts.fetch(:allow_recaching, false)
       key = opts.fetch(:key, :name)
       limit = opts.fetch(:limit, CHARACTER_LIMIT)
       limit = CHARACTER_LIMIT unless limit > 0
 
-      @cache_options = {:key => key, :limit => limit}
+      @cache_options = {:key => key, :limit => limit, :allow_recaching => allow_recaching}
 
       all.each {|instance| instance.set_instance_as_constant }
     end
@@ -55,11 +56,17 @@ module ConstantCache
     end
   end
 
-  # 
+  #
   # Create a constant on the class that pointing to an instance
   #
   def set_instance_as_constant
-    unless constant_name.nil? || self.class.const_defined?(constant_name)
+    return if constant_name.nil? # Nothing to cache
+
+    if self.class.const_defined?(constant_name) && self.class.cache_options[:allow_recaching]
+        self.class.send(:remove_const, constant_name)
+    end
+
+    unless self.class.const_defined?(constant_name)
       self.class.const_set(constant_name, self)
     end
   end
